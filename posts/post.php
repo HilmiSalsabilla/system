@@ -59,6 +59,17 @@
         die("Error fetching rating: " . $e->getMessage());
     }
 
+    // Hitung like & dislike
+    $likeQuery = $conn->prepare("SELECT 
+        SUM(action = 'like') as likes,
+        SUM(action = 'dislike') as dislikes
+        FROM likes WHERE post_id = :post_id");
+    $likeQuery->execute(['post_id' => $id]);
+    $likeData = $likeQuery->fetch(PDO::FETCH_ASSOC);
+
+    $likeCount = $likeData['likes'] ?? 0;
+    $dislikeCount = $likeData['dislikes'] ?? 0;
+
 ?>
 
 <div class="container mt-5 mb-5">
@@ -86,13 +97,40 @@
         </div>
     </div>
 
-    <!-- Rating -->
+    <!-- Rating + Like & Dislike -->
     <div class="card mb-4 border-0">
-        <div class="card-body">
-            <div class="my-rating mb-2"></div>
-            <small class="text-muted">
-                ⭐ Average: <?= number_format($avgRating, 1); ?>/5 (<?= $totalRating; ?> votes)
-            </small>
+        <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
+            
+            <!-- Rating -->
+            <div class="d-flex flex-column align-items-center mb-3">
+                <div class="my-rating mb-1"></div>
+                <small class="text-muted">
+                    <!-- <i class="bi bi-star-fill"></i> -->
+                    <?= number_format($avgRating, 1); ?>/5 (<?= $totalRating; ?> votes)
+                </small>
+            </div>
+
+            <!-- Like & Dislike -->
+            <div class="d-flex">
+                <button 
+                    class="btn btn-sm btn-outline-success like-btn d-flex align-items-center justify-content-center mr-2"
+                    style="min-width: 50px;"
+                    data-id="<?= $post['id']; ?>">
+                    <i class="bi bi-hand-thumbs-up"></i>
+                    <!-- <span>Like</span> -->
+                    <span class="ml-1 like-count"><?= $likeCount; ?></span>
+                </button>
+
+                <button 
+                    class="btn btn-sm btn-outline-danger dislike-btn d-flex align-items-center justify-content-center"
+                    style="min-width: 50px;"
+                    data-id="<?= $post['id']; ?>">
+                    <i class="bi bi-hand-thumbs-down"></i>
+                    <!-- <span>Dislike</span> -->
+                    <span class="ml-1 dislike-count"><?= $dislikeCount; ?></span>
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -244,6 +282,47 @@
                     }
                 });
                 <?php endif; ?>
+            }
+        });
+    });
+
+    // Like & Dislike
+    $(document).on("click", ".like-btn, .dislike-btn", function() {
+        let postId = $(this).data("id");
+        let action = $(this).hasClass("like-btn") ? "like" : "dislike";
+
+        $.ajax({
+            type: "POST",
+            url: "../likes/save.php",
+            data: { post_id: postId, action: action },
+            dataType: "json",
+            success: function(response) {
+                if (response.status === "success") {
+                    $(".like-btn[data-id='"+postId+"'] .like-count").text(response.likes);
+                    $(".dislike-btn[data-id='"+postId+"'] .dislike-count").text(response.dislikes);
+
+                    // highlight active button
+                    if (action === "like") {
+                        $(".like-btn[data-id='"+postId+"']")
+                            .removeClass("btn-outline-success")
+                            .addClass("btn-success");
+                        $(".dislike-btn[data-id='"+postId+"']")
+                            .removeClass("btn-danger")
+                            .addClass("btn-outline-danger");
+                    } else {
+                        $(".dislike-btn[data-id='"+postId+"']")
+                            .removeClass("btn-outline-danger")
+                            .addClass("btn-danger");
+                        $(".like-btn[data-id='"+postId+"']")
+                            .removeClass("btn-success")
+                            .addClass("btn-outline-success");
+                    }
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert("Request failed. Please try again.");
             }
         });
     });
