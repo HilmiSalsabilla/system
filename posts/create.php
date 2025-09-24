@@ -4,18 +4,17 @@
 
     // Cegah akses create jika belum login
     if (empty($_SESSION['username'])) {
-        header('Location: ../auth/login.php');
+        header('Location: ' . $baseUrl . 'auth/login.php');
         exit();
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
         $title = htmlspecialchars(trim($_POST['title']));
         $body = htmlspecialchars(trim($_POST['body']));
-        $username = $_SESSION['username'];              // ambil langsung dari session
+        $username = $_SESSION['username'];
 
         if (!empty($title) && !empty($body)) {
             try {
-                // Insert post ke database
                 $select = $conn->prepare("
                     INSERT INTO posts (title, body, username) 
                     VALUES (:title, :body, :username)
@@ -26,28 +25,26 @@
                     'username' => $username
                 ]);
 
-                // Flash success
                 $_SESSION['message'] = "Post created successfully!";
                 $_SESSION['message_type'] = "success";
-                header('Location: ../index.php');
+                header('Location: ' . $baseUrl . 'index.php');
                 exit();
-                
             } catch (PDOException $e) {
                 $_SESSION['message'] = "Error: " . $e->getMessage();
                 $_SESSION['message_type'] = "danger";
-                header('Location: ../index.php');
+                header('Location: ' . $baseUrl . 'index.php');
                 exit();
             }
         } else {
             $_SESSION['message'] = "Title and Body cannot be empty.";
             $_SESSION['message_type'] = "danger";
-            header('Location: ../index.php');
+            header('Location: ' . $baseUrl . 'index.php');
             exit();
         }
     }
 ?>
 
-<main class="container mt-5 mb-5">
+<main class="container mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-lg border-0 rounded-3">
@@ -55,7 +52,7 @@
                     <h4 class="mb-0 text-black">Create New Post</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form method="post" action="create.php">
+                    <form method="post" action="<?= $baseUrl ?>posts/create.php">
 
                         <!-- Title -->
                         <div class="form-floating mb-3">
@@ -85,7 +82,7 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-between">
-                            <a href="../index.php" class="btn btn-sm btn-outline-secondary px-4">
+                            <a href="<?= $baseUrl ?>index.php" class="btn btn-sm btn-outline-secondary px-4">
                                 Cancel
                             </a>
                             <button 
@@ -102,6 +99,5 @@
         </div>
     </div>
 </main>
-
 
 <?php require '../includes/footer.php'; ?>

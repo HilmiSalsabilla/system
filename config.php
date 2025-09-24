@@ -11,4 +11,7 @@
     }catch(PDOException $e) {
         echo 'error is:' . $e->getMessage();
     }
+
+    // Base URL untuk link
+    $baseUrl = "http://localhost/system/";
 ?>

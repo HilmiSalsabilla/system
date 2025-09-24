@@ -15,7 +15,7 @@
     if (!isset($_GET['id']) || empty($_GET['id'])) {
         $_SESSION['message'] = "Post ID is missing.";
         $_SESSION['message_type'] = "danger";
-        header("Location: ../index.php");
+        header("Location: " . $baseUrl . "index.php");
         exit();
     }
 
@@ -34,7 +34,7 @@
     if (!$post) {
         $_SESSION['message'] = "Post not found.";
         $_SESSION['message_type'] = "warning";
-        header("Location: ../index.php");
+        header("Location: " . $baseUrl . "index.php");
         exit();
     }
 
@@ -69,10 +69,9 @@
 
     $likeCount = $likeData['likes'] ?? 0;
     $dislikeCount = $likeData['dislikes'] ?? 0;
-
 ?>
 
-<div class="container mt-5 mb-5">
+<div class="container mb-4">
     <!-- Alert -->
     <?php if (!empty($message)): ?>
         <div class="alert alert-<?= $message_type ?> alert-dismissible fade show" role="alert">
@@ -82,30 +81,29 @@
     <?php endif; ?>
 
     <!-- Post Detail -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-2">
         <div class="card-body p-4">
-            <h2 class="fw-bold mb-3"><?= htmlspecialchars($post['title']); ?></h2>
-            <p class="card-text fs-6 lh-lg"><?= nl2br(htmlspecialchars($post['body'])); ?></p>
+            <h3 class="fw-bold mb-3"><?= htmlspecialchars($post['title']); ?></h3>
+            <p class="card-text fs-6 lh-md"><?= nl2br(htmlspecialchars($post['body'])); ?></p>
 
             <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                 <small class="text-muted">
                     Posted on <?= date("d M Y H:i", strtotime($post['created_at'])); ?>
                     by <span class="fw-semibold text-primary"><?= htmlspecialchars($post['username']); ?></span>
                 </small>
-                <a href="../index.php" class="btn btn-sm btn-outline-secondary">← Back to Posts</a>
+                <a href="<?= $baseUrl ?>index.php" class="btn btn-sm btn-outline-secondary">← Back to Posts</a>
             </div>
         </div>
     </div>
 
     <!-- Rating + Like & Dislike -->
-    <div class="card mb-4 border-0">
+    <div class="card mb-2 border-0">
         <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
             
             <!-- Rating -->
             <div class="d-flex flex-column align-items-center mb-3">
                 <div class="my-rating mb-1"></div>
                 <small class="text-muted">
-                    <!-- <i class="bi bi-star-fill"></i> -->
                     <?= number_format($avgRating, 1); ?>/5 (<?= $totalRating; ?> votes)
                 </small>
             </div>
@@ -117,7 +115,6 @@
                     style="min-width: 50px;"
                     data-id="<?= $post['id']; ?>">
                     <i class="bi bi-hand-thumbs-up"></i>
-                    <!-- <span>Like</span> -->
                     <span class="ml-1 like-count"><?= $likeCount; ?></span>
                 </button>
 
@@ -126,11 +123,9 @@
                     style="min-width: 50px;"
                     data-id="<?= $post['id']; ?>">
                     <i class="bi bi-hand-thumbs-down"></i>
-                    <!-- <span>Dislike</span> -->
                     <span class="ml-1 dislike-count"><?= $dislikeCount; ?></span>
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -159,11 +154,11 @@
             </div>
         </div>
     <?php else: ?>
-        <div class="alert alert-info">Please <a href="../auth/login.php">login</a> to post a comment.</div>
+        <div class="alert alert-info">Please <a href="<?= $baseUrl ?>auth/login.php">login</a> to post a comment.</div>
     <?php endif; ?>
 
     <!-- Display Comments -->
-    <h5 class="fw-bold mb-3">Comments (<?= count($comments); ?>)</h5>
+    <h5 class="fw-bold mb-2">Comments (<?= count($comments); ?>)</h5>
     <?php if (empty($comments)): ?>
         <p class="text-muted">No comments yet. Be the first to comment!</p>
     <?php else: ?>
@@ -203,7 +198,7 @@
 
             $.ajax({
                 type: "POST",
-                url: "../comment/insert.php",
+                url: "<?= $baseUrl ?>comment/insert.php",
                 data: formdata,
                 dataType: "json",
                 success: function(response) {
@@ -222,7 +217,7 @@
         });
     });
 
-    // Delete Comment via AJAX + SweetAlert
+    // Delete Comment
     $(document).on('click', '.delete-comment', function(e) {
         e.preventDefault();
         let commentId = $(this).data('id');
@@ -239,7 +234,7 @@
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "../comment/delete.php",
+                    url: "<?= $baseUrl ?>comment/delete.php",
                     data: { id: commentId, post_id: postId },
                     dataType: "json",
                     success: function(response) {
@@ -266,7 +261,7 @@
                 <?php if (!empty($_SESSION['username'])): ?>
                 $.ajax({
                     type: "POST",
-                    url: "../ratings/save.php",
+                    url: "<?= $baseUrl ?>ratings/save.php",
                     data: {
                         post_id: <?= $post['id']; ?>,
                         rating: currentRating
@@ -293,7 +288,7 @@
 
         $.ajax({
             type: "POST",
-            url: "../likes/save.php",
+            url: "<?= $baseUrl ?>likes/save.php",
             data: { post_id: postId, action: action },
             dataType: "json",
             success: function(response) {
@@ -301,7 +296,6 @@
                     $(".like-btn[data-id='"+postId+"'] .like-count").text(response.likes);
                     $(".dislike-btn[data-id='"+postId+"'] .dislike-count").text(response.dislikes);
 
-                    // highlight active button
                     if (action === "like") {
                         $(".like-btn[data-id='"+postId+"']")
                             .removeClass("btn-outline-success")

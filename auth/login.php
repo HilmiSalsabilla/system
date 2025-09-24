@@ -1,10 +1,10 @@
-<?php require "../includes/header.php"; ?>
 <?php 
+    require "../includes/header.php"; 
     require '../config.php'; 
 
     // Kalau sudah login, langsung ke index
     if(isset($_SESSION['username'])) {
-        header("Location: ../index.php");
+        header("Location: " . $baseUrl . "index.php");
         exit();
     }
 
@@ -31,7 +31,7 @@
 
                 $message = "Login successful! Redirecting...";
                 $message_type = "success";
-                header("refresh:2;url=../index.php");
+                // jangan exit, biarkan alert muncul
             } else {
                 $message = "Invalid email/username or password!";
                 $message_type = "danger";
@@ -72,5 +72,13 @@
         </h6>
     </form>
 </main>
+
+<?php if($message_type === 'success'): ?>
+    <script>
+        setTimeout(() => {
+            window.location.href = "<?= $baseUrl ?>index.php";
+        }, 2000);
+    </script>
+<?php endif; ?>
 
 <?php require "../includes/footer.php"; ?>
