@@ -68,7 +68,7 @@
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
-                                Posted on <?= date("d M Y H:i", strtotime($post['created_at'])); ?>
+                                Posted on <?= date("d M Y", strtotime($post['created_at'])); ?> at <?= date("H:i", strtotime($post['created_at'])); ?>
                                 by <span class="text-primary"><?= htmlspecialchars($post['username']); ?></span>
                             </small>
                             <a href="<?= $baseUrl ?>posts/post.php?id=<?= $post['id']; ?>" 
