@@ -36,7 +36,8 @@
 
                 $message = "Registration successful! Please login.";
                 $message_type = "success";
-                header("refresh:2; url=" . $baseUrl . "login.php");
+                header("refresh:2; url=" . $baseUrl . "auth/login.php");
+                exit();
             }
         }
     }
@@ -71,7 +72,7 @@
         <button name="register" class="w-100 btn btn-lg btn-primary" type="submit">Register</button>
 
         <h6 class="mt-3 text-center">
-            Already have an account? <a href="<?= $baseUrl ?>login.php">Login</a>
+            Already have an account? <a href="<?= $baseUrl ?>auth/login.php">Login</a>
         </h6>
     </form>
 </main>
